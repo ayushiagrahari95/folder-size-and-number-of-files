@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -23,7 +24,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *
  */
 public class NodeSizeWebScript extends DeclarativeWebScript {
-	private static final Logger log = Logger.getLogger(NodeSizeWebScript.class.getName());
+	long count;
+	static Logger log = Logger.getLogger(NodeSizeWebScript.class.getName());
 	private NodeService nodeService;
 
 	public final void setNodeService(final NodeService nodeService) {
@@ -39,7 +41,6 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 		String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
 		long size = getNodeSize(nodeRef);
 		long noOfFiles = getNoOfFiles(nodeRef);
-		log.info("no of files"+ noOfFiles);
 		model.put("nodeName", nodeName);
 		model.put("size", Long.toString(size));
 		model.put("noOfFiles",noOfFiles);
@@ -62,26 +63,28 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 
 		for (ChildAssociationRef childAssociationRef : chilAssocsList) {
 			NodeRef childNodeRef = childAssociationRef.getChildRef();
-			size = size + getNodeSize(childNodeRef);
+			if(!ForumModel.TYPE_FORUM.toString().equals(nodeService.getType(childNodeRef).toString()))	
+				size = size + getNodeSize(childNodeRef);
+			
+			
 		}
 		return size;
 	}
 	
 	private long getNoOfFiles(NodeRef nodeRef) {
-		long count = 0;
-		// Collecting current node size
-		log.info("getting the number of files");
-		// Collecting child nodes' sizes
-		// even a document (cm:content) can have child nodes, such as thumbnail
+		long count=0;
+		
+		
 		List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(nodeRef);
 		
-		log.info("getting the list of child files");
-		for (ChildAssociationRef childAssociationRef : chilAssocsList) {
-			log.info("entering for loop");
+		
+		for (ChildAssociationRef childAssociationRef : chilAssocsList) {	
 			NodeRef childNodeRef = childAssociationRef.getChildRef();
-			count += 1;
-			log.info("counter"+count);
-		}
+			if(!ForumModel.TYPE_FORUM.toString().equals(nodeService.getType(childNodeRef).toString()))	
+			{
+				count += 1;
+			}
+			}
 		return count;
 	}
 

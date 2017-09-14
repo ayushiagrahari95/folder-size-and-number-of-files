@@ -26,7 +26,7 @@
     <bean id="evaluator.doclib.action.customDocument" parent="evaluator.doclib.action.nodeType">
 		<property name="types">
 			<list>
-				<value>cm:content</value>
+				<value>cm:content</value> 
 				<value>cm:folder</value>
 			</list>
 		</property>
