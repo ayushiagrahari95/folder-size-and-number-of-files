@@ -5,4 +5,6 @@
     <div>${size}</div>
 	<h2 id="${el}-heading" class="thin dark">No. Of Files</h2>
 	<div>${noOfFiles}</div>
+	<h2 id="${el}-heading" class="thin dark">No. Of Folders</h2>
+	<div>${noOfFolders}</div>
 </div>

@@ -1,5 +1,6 @@
 {
 "nodeName": "${nodeName}",
 "size": "${size}",
-"noOfFiles":"${noOfFiles}"
+"noOfFiles":"${noOfFiles}",
+"noOfFolders":"${noOfFolders}"
 }

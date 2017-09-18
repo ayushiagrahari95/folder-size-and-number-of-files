@@ -23,10 +23,10 @@
         </property>
     </bean>
     
-    <bean id="evaluator.doclib.action.customDocument" parent="evaluator.doclib.action.nodeType">
+    <bean id="evaluator.doclib.action.isFolder" parent="evaluator.doclib.action.nodeType">
 		<property name="types">
 			<list>
-				<value>cm:content</value> 
+				<!-- <value>cm:content</value> --> 
 				<value>cm:folder</value>
 			</list>
 		</property>

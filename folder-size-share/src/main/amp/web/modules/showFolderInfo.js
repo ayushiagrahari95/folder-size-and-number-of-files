@@ -11,14 +11,14 @@ if (Alfresco.DocumentList)
 {     
 	YAHOO.Bubbling.fire("registerRenderer",
 			{
-				propertyName: "FolderInfo",
+				propertyName: "showFolderInfo",
 		 
 			   renderer: function type_renderer(record)
 			   {
 					var jsNode = record.jsNode;  
 					var nodeRef = jsNode.nodeRef;
 					var nodeid = nodeRef.id;			
-					var size_in_bytes, noOfFiles;
+					var size_in_bytes, noOfFiles, noOfFolders;
 					var formatted_size;
 					console.log(Alfresco.constants.PROXY_URI + "com/acme/nodesize/node-size.json?nodeRef=" + nodeRef);
 					
@@ -34,14 +34,11 @@ if (Alfresco.DocumentList)
 					        	 console.log("AJAX calls works. Printing the folder size " + obj.size + " & no of files " + obj.noOfFiles);
 					        	 size_in_bytes = obj.size;
 					        	 noOfFiles = obj.noOfFiles;
+					        	 noOfFolders = obj.noOfFolders;
 					        	 formatted_size=formatBytes(size_in_bytes);
 					        	 
-					        	   document.getElementsByClassName('size_' + nodeid)[0].innerHTML = formatted_size+ " ,No of Files " + noOfFiles;
+					        	   document.getElementsByClassName('size_' + nodeid)[0].innerHTML = '<b>' + formatted_size+ '</b>' + ", No of Files: " + '<b>' + noOfFiles + '</b>' + ", No of Folders: " + '<b>' + noOfFolders + '</b>';
 					           }
-					           
-					           Alfresco.util.PopupManager.displayMessage( {
-					               text : "Metadata Updated Sucessfully"+obj.formatted_size
-					           });
 					       }
 					    }
 					 });
@@ -54,7 +51,7 @@ if (Alfresco.DocumentList)
 						return parseFloat((bytes / Math.pow(k, i)).toFixed()) + ' ' + sizes[i];
 					}
 					
-					html = '<span class="item">' + "Size: " + '<b class="size_'+ nodeid +'">' + formatted_size + '</b>' + '</span>';
+					html = '<span class="item">' + "Size: " + '<span class="size_'+ nodeid +'">' +  + '</span>' + '</span>';
 					
 					return html;
 			   }

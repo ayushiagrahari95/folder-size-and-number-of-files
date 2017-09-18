@@ -12,6 +12,7 @@
         <p>Name : ${nodeName}</p>
         <p>Size : ${size}</p>
     	<p>No. Of Files : ${noOfFiles}</p>
+    	<p>No. Of Folders : ${noOfFolders}</p>
     </div>
 </body>
 </html>
