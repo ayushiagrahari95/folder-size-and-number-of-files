@@ -24,7 +24,7 @@ function main() {
 	// get size
 	var size = result["size"];
 	var noOfFiles = result["noOfFiles"];
-	var noOfFiles = result["noOfFolders"];
+	var noOfFolders = result["noOfFolders"];
 	model.size = formatBytes(size);
 	model.noOfFiles = noOfFiles;
 	model.noOfFolders = noOfFolders;
