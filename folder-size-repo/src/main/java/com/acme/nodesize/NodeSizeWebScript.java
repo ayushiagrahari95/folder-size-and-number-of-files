@@ -52,38 +52,36 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 		return model;
 	}
 
-	private long[] getNodeInfo(NodeRef  nodeRef){
+	private long[] getNodeInfo(NodeRef nodeRef) {
 		long filesCount = 0;
 		long foldersCount = 0;
-		
-		long [] nodeInfo = new long[2];
-		
+
+		long[] nodeInfo = new long[2];
+
 		// Collecting child nodes' sizes
 		// even a document (cm:content) can have child nodes, such as thumbnail
-		List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(nodeRef);
-		
+		List<ChildAssociationRef> chilAssocsList = nodeService
+				.getChildAssocs(nodeRef);
+
 		for (ChildAssociationRef childAssociationRef : chilAssocsList) {
 			NodeRef childNodeRef = childAssociationRef.getChildRef();
-			if (!ForumModel.TYPE_FORUM.toString().equals(
-					nodeService.getType(childNodeRef).toString())){
-				
-				if (!ContentModel.TYPE_FOLDER.toString().equals(
-								nodeService.getType(childNodeRef).toString())) {
-					filesCount += 1;
-				}
-				if (!ContentModel.TYPE_CONTENT.toString().equals(
-						nodeService.getType(childNodeRef).toString())) {
-					foldersCount += 1;
-				}
+
+			if (ContentModel.TYPE_CONTENT.toString().equals(
+					nodeService.getType(childNodeRef).toString())) {
+				filesCount += 1;
+			}
+			if (ContentModel.TYPE_FOLDER.toString().equals(
+					nodeService.getType(childNodeRef).toString())) {
+				foldersCount += 1;
 			}
 		}
-		
+
 		nodeInfo[0] = filesCount;
 		nodeInfo[1] = foldersCount;
-				
-		
+
 		return nodeInfo;
 	}
+
 	private long getNodeSize(NodeRef nodeRef) {
 		long size = 0;
 		// Collecting current node size
@@ -102,8 +100,10 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 
 		for (ChildAssociationRef childAssociationRef : chilAssocsList) {
 			NodeRef childNodeRef = childAssociationRef.getChildRef();
-			if (!ForumModel.TYPE_FORUM.toString().equals(
-					nodeService.getType(childNodeRef).toString()))
+			if (ContentModel.TYPE_CONTENT.toString().equals(
+					nodeService.getType(childNodeRef).toString())
+					|| ContentModel.TYPE_FOLDER.toString().equals(
+							nodeService.getType(childNodeRef).toString()))
 				size = size + getNodeSize(childNodeRef);
 
 		}
