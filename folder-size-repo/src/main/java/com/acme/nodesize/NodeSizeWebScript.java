@@ -7,10 +7,12 @@ import java.util.logging.Logger;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
@@ -27,6 +29,11 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 	long count;
 	static Logger log = Logger.getLogger(NodeSizeWebScript.class.getName());
 	private NodeService nodeService;
+	private DictionaryService dictionaryService;
+
+	public void setDictionaryService(DictionaryService dictionaryService) {
+		this.dictionaryService = dictionaryService;
+	}
 
 	public final void setNodeService(final NodeService nodeService) {
 		this.nodeService = nodeService;
@@ -66,12 +73,18 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 		for (ChildAssociationRef childAssociationRef : chilAssocsList) {
 			NodeRef childNodeRef = childAssociationRef.getChildRef();
 
+			QName targetNodeQName = nodeService.getType(childNodeRef);
+			
+			// check whether 
 			if (ContentModel.TYPE_CONTENT.toString().equals(
 					nodeService.getType(childNodeRef).toString())) {
 				filesCount += 1;
-			}
-			if (ContentModel.TYPE_FOLDER.toString().equals(
+			}else if (ContentModel.TYPE_FOLDER.toString().equals(
 					nodeService.getType(childNodeRef).toString())) {
+				foldersCount += 1;
+			}else if(isSubTypeOf(ContentModel.TYPE_CONTENT, targetNodeQName)){
+				filesCount += 1;
+			}else if(isSubTypeOf(ContentModel.TYPE_FOLDER, targetNodeQName)) {
 				foldersCount += 1;
 			}
 		}
@@ -100,13 +113,29 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 
 		for (ChildAssociationRef childAssociationRef : chilAssocsList) {
 			NodeRef childNodeRef = childAssociationRef.getChildRef();
+			QName targetNodeQName = nodeService.getType(childNodeRef);
+			
 			if (ContentModel.TYPE_CONTENT.toString().equals(
 					nodeService.getType(childNodeRef).toString())
 					|| ContentModel.TYPE_FOLDER.toString().equals(
-							nodeService.getType(childNodeRef).toString()))
+							nodeService.getType(childNodeRef).toString()) || isSubTypeOf(ContentModel.TYPE_CONTENT, targetNodeQName) 
+					|| isSubTypeOf(ContentModel.TYPE_CONTENT, targetNodeQName))
 				size = size + getNodeSize(childNodeRef);
 
 		}
 		return size;
 	}
+	
+	/**
+     * Determines whether one class is a sub type of an other.  Returns true if it is, false otherwise.
+     * 
+     * @param childNodeQName         the class to test
+     * @param parentNodeQName     test whether the class is a sub-type of this class
+     * @return boolean      true if it is a sub-class, false otherwise
+     */
+    public boolean isSubTypeOf(final QName parentNodeQName, final QName childNodeQName)
+    {
+    	return dictionaryService.isSubClass(childNodeQName, parentNodeQName);
+    	
+    }
 }

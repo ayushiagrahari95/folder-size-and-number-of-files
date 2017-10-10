@@ -27,6 +27,9 @@
 		<property name="nodeService">
 			<ref bean="NodeService" />
 		</property>
+		<property name="dictionaryService">
+            <ref bean="dictionaryService" />
+        </property>
 	</bean>
 	
 </beans>
