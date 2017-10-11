@@ -119,7 +119,7 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 					nodeService.getType(childNodeRef).toString())
 					|| ContentModel.TYPE_FOLDER.toString().equals(
 							nodeService.getType(childNodeRef).toString()) || isSubTypeOf(ContentModel.TYPE_CONTENT, targetNodeQName) 
-					|| isSubTypeOf(ContentModel.TYPE_CONTENT, targetNodeQName))
+					|| isSubTypeOf(ContentModel.TYPE_FOLDER, targetNodeQName))
 				size = size + getNodeSize(childNodeRef);
 
 		}
