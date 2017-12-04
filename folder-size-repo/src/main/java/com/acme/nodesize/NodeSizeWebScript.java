@@ -3,7 +3,6 @@ package com.acme.nodesize;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
@@ -13,10 +12,12 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
+import org.apache.log4j.Logger;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+
 
 /**
  * Calculate node content size recursively. Modified from
@@ -27,7 +28,8 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class NodeSizeWebScript extends DeclarativeWebScript {
 	long count;
-	static Logger log = Logger.getLogger(NodeSizeWebScript.class.getName());
+	
+	private static Logger logger = Logger.getLogger(NodeSizeWebScript.class);
 	private NodeService nodeService;
 	private DictionaryService dictionaryService;
 
@@ -60,6 +62,8 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 	}
 
 	private long[] getNodeInfo(NodeRef nodeRef) {
+		
+		logger.debug("**************/n Getting nodeInfo **************/n");
 		long filesCount = 0;
 		long foldersCount = 0;
 
@@ -78,14 +82,23 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 			// check whether 
 			if (ContentModel.TYPE_CONTENT.toString().equals(
 					nodeService.getType(childNodeRef).toString())) {
+				logger.debug("**************/n If - Increasing files count by 1 **************/n");
 				filesCount += 1;
 			}else if (ContentModel.TYPE_FOLDER.toString().equals(
 					nodeService.getType(childNodeRef).toString())) {
+				logger.debug("**************/n If - Increasing folders count by 1 **************/n");
 				foldersCount += 1;
-			}else if(isSubTypeOf(ContentModel.TYPE_CONTENT, targetNodeQName)){
+			}else if(isSubTypeOf(targetNodeQName, ContentModel.TYPE_CONTENT)){
+				logger.debug("**************/n Increasing files count by 1 **************/n");
 				filesCount += 1;
-			}else if(isSubTypeOf(ContentModel.TYPE_FOLDER, targetNodeQName)) {
-				foldersCount += 1;
+			}else if(isSubTypeOf(targetNodeQName, ContentModel.TYPE_FOLDER)) {
+				logger.debug("**************/n Target Folder QName is " + targetNodeQName + " **************/n");
+				if(targetNodeQName.equals(ForumModel.TYPE_FORUM) || targetNodeQName.equals(ContentModel.TYPE_SYSTEM_FOLDER)){
+					logger.debug("**************/n Doing nothing **************/n");
+				}else{
+					logger.debug("**************/n Increasing folders count by 1 **************/n");
+					foldersCount += 1;
+				}
 			}
 		}
 
@@ -96,6 +109,9 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 	}
 
 	private long getNodeSize(NodeRef nodeRef) {
+		
+		logger.debug("**************/n Getting nodeSize **************/n");
+		
 		long size = 0;
 		// Collecting current node size
 		ContentData contentData = (ContentData) nodeService.getProperty(
@@ -108,20 +124,23 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 
 		// Collecting child nodes' sizes
 		// even a document (cm:content) can have child nodes, such as thumbnail
-		List<ChildAssociationRef> chilAssocsList = nodeService
-				.getChildAssocs(nodeRef);
+		List<ChildAssociationRef> chilAssocsList = nodeService.getChildAssocs(nodeRef);
 
 		for (ChildAssociationRef childAssociationRef : chilAssocsList) {
 			NodeRef childNodeRef = childAssociationRef.getChildRef();
 			QName targetNodeQName = nodeService.getType(childNodeRef);
 			
-			if (ContentModel.TYPE_CONTENT.toString().equals(
-					nodeService.getType(childNodeRef).toString())
-					|| ContentModel.TYPE_FOLDER.toString().equals(
-							nodeService.getType(childNodeRef).toString()) || isSubTypeOf(ContentModel.TYPE_CONTENT, targetNodeQName) 
-					|| isSubTypeOf(ContentModel.TYPE_FOLDER, targetNodeQName))
-				size = size + getNodeSize(childNodeRef);
-
+			if (ContentModel.TYPE_CONTENT.toString().equals(nodeService.getType(childNodeRef).toString())
+					|| ContentModel.TYPE_FOLDER.toString().equals(nodeService.getType(childNodeRef).toString()) 
+					|| isSubTypeOf(targetNodeQName, ContentModel.TYPE_CONTENT) 
+					|| isSubTypeOf(targetNodeQName, ContentModel.TYPE_FOLDER)){
+				if(targetNodeQName.equals(ForumModel.TYPE_FORUM) || targetNodeQName.equals(ContentModel.TYPE_SYSTEM_FOLDER)){
+					logger.debug("**************/n Doing nothing **************/n");
+				}else{
+					logger.debug("**************/n Calculating size **************/n");
+					size = size + getNodeSize(childNodeRef);
+				}
+			}
 		}
 		return size;
 	}
@@ -130,10 +149,10 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
      * Determines whether one class is a sub type of an other.  Returns true if it is, false otherwise.
      * 
      * @param childNodeQName         the class to test
-     * @param parentNodeQName     test whether the class is a sub-type of this class
+     * @param parentNodeQName     test whether the class is a sub-type of this class(parent class)
      * @return boolean      true if it is a sub-class, false otherwise
      */
-    public boolean isSubTypeOf(final QName parentNodeQName, final QName childNodeQName)
+    public boolean isSubTypeOf(final QName childNodeQName, final QName parentNodeQName)
     {
     	return dictionaryService.isSubClass(childNodeQName, parentNodeQName);
     	
