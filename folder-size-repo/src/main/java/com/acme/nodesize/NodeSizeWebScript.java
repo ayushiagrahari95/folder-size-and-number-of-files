@@ -134,7 +134,7 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 					|| ContentModel.TYPE_FOLDER.toString().equals(nodeService.getType(childNodeRef).toString()) 
 					|| isSubTypeOf(targetNodeQName, ContentModel.TYPE_CONTENT) 
 					|| isSubTypeOf(targetNodeQName, ContentModel.TYPE_FOLDER)){
-				if(targetNodeQName.equals(ForumModel.TYPE_FORUM) || targetNodeQName.equals(ContentModel.TYPE_SYSTEM_FOLDER)){
+				if(targetNodeQName.equals(ForumModel.TYPE_FORUM) || targetNodeQName.equals(ContentModel.TYPE_SYSTEM_FOLDER) || targetNodeQName.equals(ContentModel.TYPE_THUMBNAIL)){
 					logger.debug("**************/n Doing nothing **************/n");
 				}else{
 					logger.debug("**************/n Calculating size **************/n");
