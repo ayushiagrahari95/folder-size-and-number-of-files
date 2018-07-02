@@ -1,5 +1,6 @@
 package com.acme.nodesize;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class NodeSizeWebScript extends DeclarativeWebScript {
 	long count;
+	private ArrayList<QName> ignoreAspectsList;
 	
 	private static Logger logger = Logger.getLogger(NodeSizeWebScript.class);
 	private NodeService nodeService;
@@ -44,6 +46,9 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 	@Override
 	protected Map<String, Object> executeImpl(WebScriptRequest req,
 			Status status, Cache cache) {
+		ignoreAspectsList=new ArrayList<QName>();
+		ignoreAspectsList.add(ContentModel.ASPECT_WORKING_COPY);
+		
 		Map<String, Object> model = new HashMap<String, Object>();
 		String nodeRefId = req.getParameter("nodeRef");
 		NodeRef nodeRef = new NodeRef(nodeRefId);
@@ -82,15 +87,27 @@ public class NodeSizeWebScript extends DeclarativeWebScript {
 			// check whether 
 			if (ContentModel.TYPE_CONTENT.toString().equals(
 					nodeService.getType(childNodeRef).toString())) {
-				logger.debug("**************/n If - Increasing files count by 1 **************/n");
-				filesCount += 1;
+				for (QName i : ignoreAspectsList)
+				{
+					if(!nodeService.hasAspect(childNodeRef, i))
+					{
+						logger.debug("**************/n If - Increasing files count by 1 **************/n");
+						filesCount += 1;
+					}
+				}
 			}else if (ContentModel.TYPE_FOLDER.toString().equals(
 					nodeService.getType(childNodeRef).toString())) {
 				logger.debug("**************/n If - Increasing folders count by 1 **************/n");
 				foldersCount += 1;
 			}else if(isSubTypeOf(targetNodeQName, ContentModel.TYPE_CONTENT)){
-				logger.debug("**************/n Increasing files count by 1 **************/n");
-				filesCount += 1;
+				for (QName i : ignoreAspectsList)
+				{
+					if(!nodeService.hasAspect(childNodeRef, i))
+					{
+						logger.debug("**************/n Increasing files count by 1 **************/n");
+						filesCount += 1;
+					}
+				}
 			}else if(isSubTypeOf(targetNodeQName, ContentModel.TYPE_FOLDER)) {
 				logger.debug("**************/n Target Folder QName is " + targetNodeQName + " **************/n");
 				if(targetNodeQName.equals(ForumModel.TYPE_FORUM) || targetNodeQName.equals(ContentModel.TYPE_SYSTEM_FOLDER)){
